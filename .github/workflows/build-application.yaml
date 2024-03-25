@@ -15,7 +15,7 @@ jobs:
       - name: Setup
         shell: pwsh
         run: |
-          apt-get -q -y install `
+          sudo apt-get -q -y install `
             libfontconfig1 `
             mesa-utils `
             x11-xserver-utils `
