@@ -6,26 +6,41 @@ jobs:
   build-deploy:
     runs-on: ubuntu-latest
     name: Build & Deploy
+    env:
+      RUST_BACKTRACE: 1
+
     steps:
       - uses: actions/checkout@v3
+
+      - name: Setup
+        shell: pwsh
+        run: |
+          apt-get -q -y install `
+            libfontconfig1 `
+            mesa-utils `
+            x11-xserver-utils `
+            libxkbcommon-x11-0 `
+            xkb-data `
+            xvfb
 
       - name: Build
         shell: pwsh
         run: |
-          ./.vscode/tasks.ps1 run build-debug-local
+          xvfb-run pwsh -f ./.vscode/tasks.ps1 run build-debug-local
 
       - name: Build Release
         shell: pwsh
         run: |
-          ./.vscode/tasks.ps1 run publish-release-amd64
+          xvfb-run pwsh -f ./.vscode/tasks.ps1 run publish-release-amd64
 
       - name: Release
         shell: pwsh
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TKN }}
         run: |
           $_tag = Get-Content -Path ./VERSION
           zip -r "Torizon-WSL2-Welcome-$_tag.zip" ./bin/Release/net8.0/linux-x64/publish/
+          gh repo set-default commontorizon/torizonWSLWelcome
           gh release create `
             --target main $_tag `
             -t "Torizon WSL2 Welcome $_tag" `
