@@ -1,0 +1,202 @@
+import {
+    Button,
+    HorizontalBox,
+    VerticalBox,
+    AboutSlint,
+    TextEdit,
+    LineEdit
+} from "std-widgets.slint";
+
+export component AppWindow inherits Window {
+    in-out property<bool> createLoginShow : false;
+    in-out property<string> labelDoNotMatch : "Repeat password:";
+    in-out property<string> loginName;
+    in-out property<string> loginPsswd;
+    in-out property<string> loginRepPsswd;
+    callback createLogin();
+
+    max-height: 700px;
+    max-width: 800px;
+    min-width: 800px;
+    min-height: 700px;
+
+    background: @linear-gradient(30deg, #F2F2F2, #0164b1);
+    //background: #F2F2F2;
+    title: "Torizon on WSL 2";
+
+    VerticalBox {
+        alignment: LayoutAlignment.center;
+        spacing: 10px;
+
+        HorizontalLayout {
+            alignment: LayoutAlignment.center;
+
+            Image {
+                source: @image-url("./assets/torizonLoves.png");
+                width: 263px;
+                height: 143px;
+            }
+        }
+
+        HorizontalBox {
+            alignment: LayoutAlignment.center;
+            padding-bottom: 40px;
+
+            Text {
+                text: "Welcome to Torizon on WSL 2!";
+                font-size: 30px;
+                font-weight: 600;
+                color: #004377;
+            }
+        }
+
+        HorizontalBox {
+            alignment: LayoutAlignment.start;
+            padding-left: 20px;
+
+            Text {
+                horizontal-alignment: TextHorizontalAlignment.left;
+                text: "Let's get things ready for you start developing!";
+                font-size: 20px;
+            }
+        }
+
+        if (!createLoginShow) :
+            Rectangle {
+                //background: #f2f2f2;
+                border-radius: 20px;
+                height: 200px;
+
+                VerticalLayout {
+                    alignment: LayoutAlignment.center;
+                    spacing: 50px;
+                    padding: 20px;
+
+                    Text {
+                        horizontal-alignment: TextHorizontalAlignment.left;
+                        font-size: 20px;
+                        wrap: TextWrap.word-wrap;
+                        text: "First we need to create a new user name and password to you use with your brand new Torizon on WSL 2!*";
+                    }
+
+                    Button {
+                        height: 40px;
+                        text: "Let's Go!";
+                        clicked => {
+                            createLoginShow = true;
+                        }
+                    }
+
+                    Text {
+                        text: "*https://learn.microsoft.com/en-us/windows/wsl/setup/environment#set-up-your-linux-username-and-password";
+                    }
+                }
+            }
+
+        if (createLoginShow) :
+            VerticalLayout {
+                alignment: LayoutAlignment.center;
+                padding-top: 30px;
+                spacing: 10px;
+
+                HorizontalLayout {
+                    x: userInput.x;
+                    alignment: LayoutAlignment.start;
+
+                    Text {
+                        text: "New user name:";
+                        font-size: 15px;
+                    }
+                }
+
+                HorizontalLayout {
+                    alignment: LayoutAlignment.center;
+
+                    userInput := LineEdit {
+                        width: 400px;
+                        height: 40px;
+                        text <=> loginName;
+                    }
+                }
+
+                HorizontalLayout {
+                    x: userPsswd.x;
+                    alignment: LayoutAlignment.start;
+
+                    Text {
+                        text: "New Password:";
+                        font-size: 15px;
+                    }
+                }
+
+                HorizontalLayout {
+                    alignment: LayoutAlignment.center;
+
+                    userPsswd := LineEdit {
+                        input-type: InputType.password;
+                        width: 400px;
+                        height: 40px;
+                        text <=> loginPsswd;
+                        edited => {
+                            if (loginPsswd != loginRepPsswd) {
+                                labelDoNotMatch = "Repeat password (do not match):";
+                                labelRepead.color = #aa0e0e;
+                            } else {
+                                labelDoNotMatch = "Repeat password (ok):";
+                                labelRepead.color = #145c12;
+                            }
+                        }
+                    }
+                }
+
+                HorizontalLayout {
+                    x: userRepPsswd.x;
+                    alignment: LayoutAlignment.start;
+
+                    labelRepead := Text {
+                        text: labelDoNotMatch;
+                        font-size: 15px;
+                    }
+                }
+
+                HorizontalLayout {
+                    alignment: LayoutAlignment.center;
+
+                    userRepPsswd := LineEdit {
+                        input-type: InputType.password;
+                        width: 400px;
+                        height: 40px;
+                        text <=> loginRepPsswd;
+                        edited => {
+                            if (loginPsswd != loginRepPsswd) {
+                                labelDoNotMatch = "Repeat password (do not match):";
+                                labelRepead.color = #aa0e0e;
+                            } else {
+                                labelDoNotMatch = "Repeat password (ok):";
+                                labelRepead.color = #145c12;
+                            }
+                        }
+                    }
+                }
+
+                HorizontalLayout {
+                    alignment: LayoutAlignment.center;
+
+                    Button {
+                        text: "Create User";
+                        primary: true;
+                        width: 300px;
+                        height: 40px;
+                        enabled: loginPsswd != "" && loginRepPsswd != "" && loginPsswd == loginRepPsswd;
+                        clicked => {
+                            if (
+                                loginPsswd != "" && loginRepPsswd != "" && loginPsswd == loginRepPsswd
+                            ) {
+                                root.createLogin();
+                            }
+                        }
+                    }
+                }
+            }
+    }
+}
