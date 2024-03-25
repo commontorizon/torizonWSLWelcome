@@ -3,10 +3,6 @@ on:
   - push
 
 jobs:
-  build-release:
-    runs-on: ubuntu-latest
-    name: Build & Release
-
   build-deploy:
     runs-on: ubuntu-latest
     name: Build & Deploy
