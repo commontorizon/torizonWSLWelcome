@@ -20,6 +20,10 @@ jobs:
             mesa-utils `
             x11-xserver-utils `
             libxkbcommon-x11-0 `
+            libfreetype6 `
+            libgbm1 `
+            libinput10 `
+            libxkbcommon0 `
             xkb-data `
             xvfb
 
