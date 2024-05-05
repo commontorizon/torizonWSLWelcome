@@ -16,4 +16,14 @@ win.CreateLogin = () =>
     Environment.Exit(0);
 };
 
+// for some reason, the window size is not being respected
+// so we set it after a delay
+Slint.Timer.Start(TimerMode.SingleShot, 1000, () =>
+{
+    win.RunOnUiThread(() => {
+        win.Width = 800;
+        win.Height = 700;
+    });
+});
+
 win.Run();

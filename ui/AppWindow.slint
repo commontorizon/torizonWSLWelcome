@@ -9,16 +9,16 @@ import {
 
 export component AppWindow inherits Window {
     in-out property<bool> createLoginShow : false;
+    in-out property<length> Width : 799px;
+    in-out property<length> Height : 699px;
     in-out property<string> labelDoNotMatch : "Repeat password:";
     in-out property<string> loginName;
     in-out property<string> loginPsswd;
     in-out property<string> loginRepPsswd;
     callback createLogin();
 
-    max-height: 700px;
-    max-width: 800px;
-    min-width: 800px;
-    min-height: 700px;
+    width <=> root.Width;
+    height <=> root.Height;
 
     background: @linear-gradient(30deg, #F2F2F2, #0164b1);
     //background: #F2F2F2;
