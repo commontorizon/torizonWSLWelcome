@@ -15,5 +15,6 @@
   "torizon_app_root": "/home/torizon/app",
   "tcb.packageName": "torizonWSLWelcome",
   "tcb.version": "3.8.1",
-  "torizon.gpuPrefixRC": true
+  "torizon.gpuPrefixRC": true,
+  "slint.preview.style": "fluent-dark"
 }

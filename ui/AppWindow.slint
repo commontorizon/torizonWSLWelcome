@@ -7,22 +7,33 @@ import {
     LineEdit
 } from "std-widgets.slint";
 
+import "./assets/Frutiger.ttf";
+
 export component AppWindow inherits Window {
     in-out property<bool> createLoginShow : false;
+    in-out property<bool> welcomeShow : true;
     in-out property<length> Width : 799px;
     in-out property<length> Height : 699px;
     in-out property<string> labelDoNotMatch : "Repeat password:";
     in-out property<string> loginName;
     in-out property<string> loginPsswd;
     in-out property<string> loginRepPsswd;
+    in-out property<int> backDeg : 0;
     callback createLogin();
 
     width <=> root.Width;
     height <=> root.Height;
 
-    background: @linear-gradient(30deg, #F2F2F2, #0164b1);
-    //background: #F2F2F2;
+    background: @linear-gradient(backDeg * -1deg, #02521e, #001f3e);
     title: "Torizon on WSL 2";
+
+    default-font-family: "Frutiger";
+
+    TouchArea {
+        pointer-event => {
+            backDeg = ((self.mouse-x / self.height) * 180);
+        }
+    }
 
     VerticalBox {
         alignment: LayoutAlignment.center;
@@ -31,37 +42,49 @@ export component AppWindow inherits Window {
         HorizontalLayout {
             alignment: LayoutAlignment.center;
 
-            Image {
-                source: @image-url("./assets/torizonLoves.png");
-                width: 263px;
-                height: 143px;
+            logo := Image {
+                source: @image-url("./assets/torizon.png");
+                width: 280px;
+                height: 280px;
+
+                animate height {
+                    duration: 500ms;
+                    easing: ease-in-out;
+                }
+
+                animate width {
+                    duration: 500ms;
+                    easing: ease-in-out;
+                }
             }
         }
 
         HorizontalBox {
             alignment: LayoutAlignment.center;
-            padding-bottom: 40px;
+            padding-bottom: -60px;
 
             Text {
-                text: "Welcome to Torizon on WSL 2!";
-                font-size: 30px;
+                text: "WELCOME\n";
+                font-size: 70px;
                 font-weight: 600;
-                color: #004377;
+                font-family: "Frutiger";
+                color: #f3f3f3;
             }
         }
 
         HorizontalBox {
-            alignment: LayoutAlignment.start;
-            padding-left: 20px;
+            alignment: LayoutAlignment.center;
 
-            Text {
-                horizontal-alignment: TextHorizontalAlignment.left;
-                text: "Let's get things ready for you start developing!";
+            message2 := Text {
+                text: "TO TORIZON DEVELOPMENT ENVIRONMENT FOR WSL 2";
                 font-size: 20px;
+                font-weight: 600;
+                font-family: "Frutiger";
+                color: #f3f3f3;
             }
         }
 
-        if (!createLoginShow) :
+        if (welcomeShow) :
             Rectangle {
                 //background: #f2f2f2;
                 border-radius: 20px;
@@ -73,22 +96,23 @@ export component AppWindow inherits Window {
                     padding: 20px;
 
                     Text {
-                        horizontal-alignment: TextHorizontalAlignment.left;
+                        horizontal-alignment: TextHorizontalAlignment.center;
                         font-size: 20px;
                         wrap: TextWrap.word-wrap;
-                        text: "First we need to create a new user name and password to you use with your brand new Torizon on WSL 2!*";
+                        text: "First we need to create a new user name and password to configure your new Torizon Development Environment for WSL 2:";
+                        font-family: "Frutiger";
                     }
 
                     Button {
                         height: 40px;
-                        text: "Let's Go!";
+                        text: "LET'S GO!";
+
                         clicked => {
                             createLoginShow = true;
+                            welcomeShow = false;
+                            logo.width = 180px;
+                            logo.height = 180px;
                         }
-                    }
-
-                    Text {
-                        text: "*https://learn.microsoft.com/en-us/windows/wsl/setup/environment#set-up-your-linux-username-and-password";
                     }
                 }
             }
@@ -106,6 +130,7 @@ export component AppWindow inherits Window {
                     Text {
                         text: "New user name:";
                         font-size: 15px;
+                        font-family: "Frutiger";
                     }
                 }
 
@@ -126,6 +151,7 @@ export component AppWindow inherits Window {
                     Text {
                         text: "New Password:";
                         font-size: 15px;
+                        font-family: "Frutiger";
                     }
                 }
 
@@ -183,7 +209,7 @@ export component AppWindow inherits Window {
                     alignment: LayoutAlignment.center;
 
                     Button {
-                        text: "Create User";
+                        text: "CREATE USER";
                         primary: true;
                         width: 300px;
                         height: 40px;
@@ -192,6 +218,10 @@ export component AppWindow inherits Window {
                             if (
                                 loginPsswd != "" && loginRepPsswd != "" && loginPsswd == loginRepPsswd
                             ) {
+                                createLoginShow = false;
+                                message2.text = "PLEASE WAIT ...";
+                                logo.width = 380px;
+                                logo.height = 380px;
                                 root.createLogin();
                             }
                         }
