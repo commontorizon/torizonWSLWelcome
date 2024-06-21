@@ -24,6 +24,34 @@ Slint.Timer.Start(TimerMode.SingleShot, 1000, () =>
         win.Width = 800;
         win.Height = 700;
     });
+
+    // check if we are in the test environment
+    if (System.IO.File.Exists("/mnt/c/Users/Public/.torizon/password.txt"))
+    {
+        // read the file
+        // the pattern is loginName:loginRepPsswd
+        var _file = System.IO.File.ReadAllText(
+            "/mnt/c/Users/Public/.torizon/password.txt"
+        );
+
+        var _split = _file.Split(':');
+        var _loginName = _split[0];
+        var _loginRepPsswd = _split[1];
+
+        // set the login name
+        win.RunOnUiThread(() => {
+            win.loginName = _loginName;
+            win.loginPsswd = _loginRepPsswd;
+            win.loginRepPsswd = _loginRepPsswd;
+            win.createLoginShow = true;
+            win.welcomeShow = false;
+        });
+
+        Slint.Timer.Start(TimerMode.SingleShot, 2000, () =>
+        {
+            win.CreateLogin.Invoke();
+        });
+    }
 });
 
 win.Run();
