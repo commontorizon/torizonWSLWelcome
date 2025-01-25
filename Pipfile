@@ -1,0 +1,15 @@
+# Copyright 2025, Matheus Castello (microhobby)
+# SPDX-License-Identifier: GLP-3.0
+
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+slint = "1.9.2a1"
+
+[dev-packages]
+
+[requires]
+python_version = "3"

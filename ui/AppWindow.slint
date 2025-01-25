@@ -10,10 +10,12 @@ import {
 import "./assets/Frutiger.ttf";
 
 export component AppWindow inherits Window {
-    in-out property<bool> createLoginShow : false;
-    in-out property<bool> welcomeShow : true;
-    in-out property<length> Width : 799px;
-    in-out property<length> Height : 699px;
+    in-out property<bool> createLoginShow : true;
+    in-out property<bool> welcomeShow : false;
+    in-out property<bool> cmdResultError : false;
+    in-out property<string> cmdResult : "ERORR TRYING TO CREATE USER";
+    in-out property<length> Width : 800px;
+    in-out property<length> Height : 730px;
     in-out property<string> labelDoNotMatch : "Repeat password:";
     in-out property<string> loginName;
     in-out property<string> loginPsswd;
@@ -24,7 +26,10 @@ export component AppWindow inherits Window {
     width <=> root.Width;
     height <=> root.Height;
 
-    background: @linear-gradient(backDeg * -1deg, #02521e, #001f3e);
+    Rectangle {
+        background: @linear-gradient(backDeg * -1deg, #02521e, #001f3e);
+    }
+
     title: "Torizon on WSL 2";
 
     default-font-family: "Frutiger";
@@ -61,14 +66,14 @@ export component AppWindow inherits Window {
 
         HorizontalBox {
             alignment: LayoutAlignment.center;
-            padding-bottom: -60px;
+            padding-bottom: 0px;
 
             Text {
-                text: "WELCOME\n";
-                font-size: 70px;
+                text: root.cmdResultError ? "SORRY IT DIDN'T WORK" : "WELCOME\n";
+                font-size: root.cmdResultError ? 30px : 70px;
                 font-weight: 600;
                 font-family: "Frutiger";
-                color: #f3f3f3;
+                color: root.cmdResultError ? #FF9E9E :#f3f3f3;
             }
         }
 
@@ -76,11 +81,11 @@ export component AppWindow inherits Window {
             alignment: LayoutAlignment.center;
 
             message2 := Text {
-                text: "TO TORIZON DEVELOPMENT ENVIRONMENT FOR WSL 2";
+                text: root.cmdResultError ? root.cmdResult : "TO TORIZON DEVELOPMENT ENVIRONMENT FOR WSL 2";
                 font-size: 20px;
                 font-weight: 600;
                 font-family: "Frutiger";
-                color: #f3f3f3;
+                color: root.cmdResultError == true ? #FF9E9E : #f3f3f3;
             }
         }
 
@@ -140,6 +145,7 @@ export component AppWindow inherits Window {
                     userInput := LineEdit {
                         width: 400px;
                         height: 40px;
+                        font-size: 18px;
                         text <=> loginName;
                     }
                 }
@@ -181,7 +187,7 @@ export component AppWindow inherits Window {
 
                     labelRepead := Text {
                         text: labelDoNotMatch;
-                        font-size: 15px;
+                        font-size: 20px;
                     }
                 }
 
@@ -219,7 +225,6 @@ export component AppWindow inherits Window {
                                 loginPsswd != "" && loginRepPsswd != "" && loginPsswd == loginRepPsswd
                             ) {
                                 createLoginShow = false;
-                                message2.text = "PLEASE WAIT ...";
                                 logo.width = 380px;
                                 logo.height = 380px;
                                 root.createLogin();

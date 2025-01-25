@@ -4,7 +4,7 @@ on:
 
 jobs:
   build-deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     name: Build & Deploy
     env:
       RUST_BACKTRACE: 1
@@ -13,40 +13,79 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Setup
-        shell: pwsh
+        shell: bash
         run: |
-          sudo apt-get -q -y install `
-            libfontconfig1 `
-            mesa-utils `
-            x11-xserver-utils `
-            libxkbcommon-x11-0 `
-            libfreetype6 `
-            libgbm1 `
-            libinput10 `
-            libxkbcommon0 `
-            xkb-data `
-            xvfb
+          sudo apt-get -q -y install \
+            libfontconfig1 \
+            mesa-utils \
+            x11-xserver-utils \
+            libxkbcommon-x11-0 \
+            libfreetype6 \
+            libgbm1 \
+            libinput10 \
+            libxkbcommon0 \
+            xkb-data \
+            xvfb \
+            x11-apps \
+            imagemagick \
+            python3 \
+            python3-pip \
+            pipx \
+            pipenv
 
-      - name: Build
-        shell: pwsh
-        run: |
-          xvfb-run pwsh -f ./.vscode/tasks.ps1 run build-debug-local
+          sudo bash ./.conf/setup-xonsh.sh
+          sudo ln -s /root/.local/bin/xonsh /usr/bin/xonsh
 
-      - name: Build Release
-        shell: pwsh
+      - name: Test
+        shell: bash
         run: |
-          xvfb-run pwsh -f ./.vscode/tasks.ps1 run publish-release-amd64
+          VERSION=$(cat ./VERSION)
+          export VERSION=$VERSION
+
+          xonsh ./.vscode/tasks.xsh run create-package-zip
+
+          # mimic a installation
+          mkdir -p install-test
+          cp Torizon-WSL2-Welcome-$VERSION.zip ./install-test/
+          cd install-test
+          unzip Torizon-WSL2-Welcome-$VERSION.zip
+          sudo pipenv sync
+
+          # set the password.txt to auto-login
+          mkdir -p ./.conf
+          echo "test:test" > ./.conf/password.txt
+
+          # run the virtual framebuffer
+          sudo xvfb-run -a -s "-screen 0 1920x1080x24" sh -c "pipenv run python3 main.py & APP_ID=$! && sleep 5s && xwd -root -silent | convert xwd:- screenshot.png && wait $APP_ID"
+
+          # wait for the virtual framebuffer to finish
+          APP_EXIT_CODE=$?
+          echo "Application exited with code $APP_EXIT_CODE"
+          if [ $APP_EXIT_CODE -ne 0 ]; then
+            exit $APP_EXIT_CODE
+          fi
+
+      - name: Publish Screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot
+          path: install-test/screenshot.png
 
       - name: Release
-        shell: pwsh
+        shell: xonsh {0}
         env:
           GH_TOKEN: ${{ secrets.GH_TKN }}
         run: |
-          $_tag = Get-Content -Path ./VERSION
-          zip -r "Torizon-WSL2-Welcome-$_tag.zip" ./bin/Release/net8.0/linux-x64/publish/
+          $UPDATE_OS_ENVIRON = True
+          $XONSH_SHOW_TRACEBACK = True
+          $RAISE_SUBPROC_ERROR = True
+          $VERSION = $(cat ./VERSION)
+
+          xonsh ./.vscode/tasks.xsh run create-package-zip
+
           gh repo set-default commontorizon/torizonWSLWelcome
-          gh release create `
-            --target main $_tag `
-            -t "Torizon WSL2 Welcome $_tag" `
-            -n "Torizon WSL2 Welcome $_tag" `
-            "Torizon-WSL2-Welcome-$_tag.zip"
+          gh release create \
+            --target main $VERSION \
+            -t "Torizon WSL2 Welcome $VERSION" \
+            -n "Torizon WSL2 Welcome $VERSION" \
+            "Torizon-WSL2-Welcome-$VERSION.zip"

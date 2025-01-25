@@ -3,3 +3,4 @@ obj
 
 credentials.zip
 *.lock.yml
+.mypy_cache
