@@ -1,7 +1,0 @@
-{
-    "packages": [
-        "openssh-client",
-        "sshpass",
-        "dotnet-sdk-8.0"
-    ]
-}
