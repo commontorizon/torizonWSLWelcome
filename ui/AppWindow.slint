@@ -4,7 +4,8 @@ import {
     VerticalBox,
     AboutSlint,
     TextEdit,
-    LineEdit
+    LineEdit,
+    ProgressIndicator
 } from "std-widgets.slint";
 
 import "./assets/Frutiger.ttf";
@@ -12,6 +13,7 @@ import "./assets/Frutiger.ttf";
 export component AppWindow inherits Window {
     in-out property<bool> createLoginShow : true;
     in-out property<bool> welcomeShow : false;
+    in-out property<bool> loading : false;
     in-out property<bool> cmdResultError : false;
     in-out property<string> cmdResult : "ERORR TRYING TO CREATE USER";
     in-out property<length> Width : 800px;
@@ -77,17 +79,44 @@ export component AppWindow inherits Window {
             }
         }
 
-        HorizontalBox {
-            alignment: LayoutAlignment.center;
 
-            message2 := Text {
-                text: root.cmdResultError ? root.cmdResult : "TO TORIZON DEVELOPMENT ENVIRONMENT FOR WSL 2";
-                font-size: 20px;
-                font-weight: 600;
-                font-family: "Frutiger";
-                color: root.cmdResultError == true ? #FF9E9E : #f3f3f3;
+        if (loading) :
+            VerticalBox {
+                HorizontalBox {
+                    alignment: LayoutAlignment.center;
+
+                    Text {
+                        text: "PLEASE WAIT";
+                        font-size: 20px;
+                        font-weight: 600;
+                        font-family: "Frutiger";
+                        color: #f3f3f3;
+                    }
+                }
+
+                HorizontalBox {
+                    alignment: LayoutAlignment.center;
+
+                    ProgressIndicator {
+                        indeterminate: true;
+                        height: 20px;
+                        width: 200px;
+                    }
+                }
             }
-        }
+
+        if (!loading) :
+            HorizontalBox {
+                alignment: LayoutAlignment.center;
+
+                message2 := Text {
+                    text: root.cmdResultError ? root.cmdResult : "TO TORIZON DEVELOPMENT ENVIRONMENT FOR WSL 2";
+                    font-size: 20px;
+                    font-weight: 600;
+                    font-family: "Frutiger";
+                    color: root.cmdResultError == true ? #FF9E9E : #f3f3f3;
+                }
+            }
 
         if (welcomeShow) :
             Rectangle {
@@ -224,6 +253,7 @@ export component AppWindow inherits Window {
                             if (
                                 loginPsswd != "" && loginRepPsswd != "" && loginPsswd == loginRepPsswd
                             ) {
+                                loading = true;
                                 createLoginShow = false;
                                 logo.width = 380px;
                                 logo.height = 380px;

@@ -1,9 +1,14 @@
 
 import os
 import subprocess
+import threading
 import slint # type: ignore
 from slint import Timer, TimerMode
 from datetime import timedelta
+
+# static var
+_process_status = -1
+_process_out = ""
 
 # load the components using load_file to set the style
 app_components = slint.load_file("./ui/AppWindow.slint", style="fluent-dark")
@@ -64,6 +69,7 @@ class App(app_components.AppWindow): # type: ignore
         self.cmdResultError = False
         self.createLoginShow = False
         self.welcomeShow = True
+        self.loading = False
         self.Width = 780
         self.Height = 680
         self.labelDoNotMatch = "Repeat password:"
@@ -80,29 +86,72 @@ class App(app_components.AppWindow): # type: ignore
             self.__force_resize
         )
 
-    @slint.callback
-    def createLogin(self):
+    def __create_login(self, login_name, login_rep_psswd):
+        global _process_status
+        global _process_out
+
         try:
+            # create the user
             subprocess.run(
-                f"useradd -m {self.loginName} -p $(openssl passwd -1 {self.loginRepPsswd})",
+                f"useradd -m {login_name} -p $(openssl passwd -1 {login_rep_psswd})",
                 shell=True,
                 check=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True
             )
+
+            # run the specific init with the new user
+            subprocess.run(
+                f"su -c '/opt/specific_init.sh' {login_name}",
+                shell=True,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+
+            _process_status = 0
+
         except subprocess.CalledProcessError as e:
             print(e.stdout)
             print(f"Command failed with error:")
             print(e.stderr)
-            self.cmdResult = e.stderr
-            self.cmdResultError = True
+            _process_status = e.returncode
+            _process_out = e.stderr
 
-        # and then exit
+
+    def __update_status(self):
+        global _process_status
+        global _process_out
+
+        # update the UI status
+        if _process_status != -1:
+            self.cmdResult = _process_out
+            self.cmdResultError = _process_status != 0
+            self.loading = False
+
+            # and then exit
+            self.timer.start(
+                TimerMode.SingleShot,
+                timedelta(milliseconds=(15000 if self.cmdResultError == False else 5000)),
+                self.__close
+            )
+
+
+    @slint.callback
+    def createLogin(self):
+        # call in a different thread
+        threading.Thread(
+            target=self.__create_login,
+            args=(self.loginName, self.loginRepPsswd)
+        ).start()
+
+        # and check the status from time to time
         self.timer.start(
-            TimerMode.SingleShot,
-            timedelta(milliseconds=(5000 if self.cmdResultError == False else 10000)),
-            self.__close
+            TimerMode.Repeated,
+            timedelta(milliseconds=500),
+            self.__update_status
         )
 
 
