@@ -46,6 +46,10 @@ jobs:
 
           xonsh ./.vscode/tasks.xsh run create-package-zip
 
+          # the specific init
+          cp ./.conf/specific_init.sh /opt/specific_init.sh
+          chmod +x /opt/specific_init.sh
+
           # mimic a installation
           mkdir -p install-test
           cp Torizon-WSL2-Welcome-$VERSION.zip ./install-test/
@@ -56,10 +60,6 @@ jobs:
           # set the password.txt to auto-login
           mkdir -p ./.conf
           echo "test:test" > ./.conf/password.txt
-
-          # the specific init
-          cp ./.conf/specific_init.sh /opt/specific_init.sh
-          chmod +x /opt/specific_init.sh
 
           # run the virtual framebuffer
           sudo xvfb-run -a -s "-screen 0 1920x1080x24" sh -c "pipenv run python3 main.py & APP_ID=$! && sleep 5s && xwd -root -silent | convert xwd:- screenshot.png && wait $APP_ID"
