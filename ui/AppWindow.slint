@@ -15,9 +15,10 @@ export component AppWindow inherits Window {
     in-out property<bool> welcomeShow : false;
     in-out property<bool> loading : false;
     in-out property<bool> cmdResultError : false;
+    in-out property<bool> started : false;
     in-out property<string> cmdResult : "ERORR TRYING TO CREATE USER";
     in-out property<length> Width : 800px;
-    in-out property<length> Height : 730px;
+    in-out property<length> Height : 900px;
     in-out property<string> labelDoNotMatch : "Repeat password:";
     in-out property<string> loginName;
     in-out property<string> loginPsswd;
@@ -42,40 +43,95 @@ export component AppWindow inherits Window {
         }
     }
 
-    VerticalBox {
-        alignment: LayoutAlignment.center;
-        spacing: 10px;
-
-        HorizontalLayout {
+    if (!started) :
+        VerticalBox {
             alignment: LayoutAlignment.center;
+            HorizontalLayout {
+                alignment: LayoutAlignment.center;
 
-            logo := Image {
-                source: @image-url("./assets/torizon.png");
-                width: 280px;
-                height: 280px;
+                splash := Image {
+                    source: @image-url("./assets/torizon-splash-debian.png");
+                    width: 0px;
 
-                animate height {
-                    duration: 500ms;
-                    easing: ease-in-out;
-                }
+                    animate height {
+                        duration: 500ms;
+                        easing: ease-in-out;
+                    }
 
-                animate width {
-                    duration: 500ms;
-                    easing: ease-in-out;
+                    animate width {
+                        duration: 500ms;
+                        easing: ease-in-out;
+                    }
+
+                    splashTimerStart := Timer {
+                        interval: 3000ms;
+                        running: true;
+                        triggered => {
+                            splash.width = 600px;
+                            splashTimerStart.running = false;
+                        }
+                    }
+
+                    splashTimerMidle := Timer {
+                        interval: 6000ms;
+                        running: true;
+                        triggered => {
+                            splashTimerMidle.running = false;
+                            splash.width = 0px;
+                            splashTimerEnd.running = true;
+                        }
+                    }
+
+                    splashTimerEnd := Timer {
+                        interval: 500ms;
+                        running: false;
+                        triggered => {
+                            splashTimerEnd.running = false;
+                            started = true;
+                        }
+                    }
                 }
             }
         }
 
-        HorizontalBox {
-            alignment: LayoutAlignment.center;
-            padding-bottom: 0px;
+    VerticalBox {
+        alignment: LayoutAlignment.center;
+        spacing: 10px;
 
-            Text {
-                text: root.cmdResultError ? "SORRY IT DIDN'T WORK" : "WELCOME\n";
-                font-size: root.cmdResultError ? 30px : 70px;
-                font-weight: 600;
-                font-family: "Frutiger";
-                color: root.cmdResultError ? #FF9E9E :#f3f3f3;
+        VerticalBox {
+            HorizontalLayout {
+                alignment: LayoutAlignment.center;
+                visible: started;
+
+                logo := Image {
+                    source: @image-url("./assets/torizon.png");
+                    width: 280px;
+                    height: 280px;
+
+                    animate height {
+                        duration: 500ms;
+                        easing: ease-in-out;
+                    }
+
+                    animate width {
+                        duration: 500ms;
+                        easing: ease-in-out;
+                    }
+                }
+            }
+
+            HorizontalBox {
+                alignment: LayoutAlignment.center;
+                padding-bottom: 0px;
+                visible: started;
+
+                Text {
+                    text: root.cmdResultError ? "SORRY IT DIDN'T WORK" : "WELCOME\n";
+                    font-size: root.cmdResultError ? 30px : 40px;
+                    font-weight: 600;
+                    font-family: "Frutiger";
+                    color: root.cmdResultError ? #FF9E9E :#f3f3f3;
+                }
             }
         }
 
@@ -105,7 +161,7 @@ export component AppWindow inherits Window {
                 }
             }
 
-        if (!loading) :
+        if (!loading && started) :
             HorizontalBox {
                 alignment: LayoutAlignment.center;
 
@@ -118,7 +174,7 @@ export component AppWindow inherits Window {
                 }
             }
 
-        if (welcomeShow) :
+        if (welcomeShow && started) :
             Rectangle {
                 //background: #f2f2f2;
                 border-radius: 20px;

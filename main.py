@@ -54,7 +54,7 @@ class App(app_components.AppWindow): # type: ignore
 
         self.timer.start(
             TimerMode.SingleShot,
-            timedelta(milliseconds=1000),
+            timedelta(milliseconds=10000),
             self.__automated_login
         )
 
